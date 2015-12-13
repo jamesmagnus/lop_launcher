@@ -29,5 +29,3 @@
 
 #include "NetworkManager.h"
 #include "BaseWindow.h"
-
-#include <iostream>
