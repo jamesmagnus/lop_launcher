@@ -25,8 +25,6 @@
 #include <exception>
 #include <iostream>
 #include <RakNet/RakPeerInterface.h>
-#include <RakNet/MessageIdentifiers.h>
-#include <RakNet/BitStream.h>
 #include <RakNet/RakNetTime.h>
 #include <RakNet/GetTime.h>
 
@@ -120,4 +118,14 @@ void CNetworkManager::PrintPingResponse(RakNet::Packet* pPacket) const
 		bs.Read(time);
 		std::cout << "Response from: " << pPacket->systemAddress.ToString() << " Ping: " << RakNet::GetTimeMS() - time << std::endl;
 	}
+}
+
+void CNetworkManager::CreatePacket(ECustomID EmessageID)
+{
+	mBS.Reset();
+
+	mBS.Write(static_cast<RakNet::MessageID>(DefaultMessageIDTypes::ID_TIMESTAMP));
+	mBS.Write(RakNet::GetTime());
+
+	mBS.Write(static_cast<RakNet::MessageID>(EmessageID));
 }

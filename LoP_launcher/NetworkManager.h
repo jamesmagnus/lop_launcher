@@ -23,7 +23,9 @@
 
 #pragma once
 
+#include <RakNet/MessageIdentifiers.h>
 #include <RakNet/RakString.h>
+#include <RakNet/BitStream.h>
 
 //! \def Define the maximum number of connexions allowed at the same time (server mode).
 #define MAX_PEER 500
@@ -38,6 +40,14 @@ enum class ECS
 	EClient		//!< Client
 };
 
+//! \enum ECustomID Complement the Raknet message ID with custom IDs.
+enum ECustomID
+{
+	EFileInfo = DefaultMessageIDTypes::ID_USER_PACKET_ENUM,	//!< Message with informations about a file.
+	EFileContent,											//!< File transfer.
+	EVersion												//!< Game version
+};
+
 class RakNet::RakPeerInterface;
 
 //! \class CNetworkManager
@@ -47,9 +57,10 @@ class RakNet::RakPeerInterface;
 class CNetworkManager
 {
 private:
-	static CNetworkManager* mpNetManager; //!< Unique instance pointer
-	bool mIsServer; //!< True if the network manager is running as a server, false otherwise.
-	RakNet::RakPeerInterface* mpPeer; //!< Pointer on raknet peer object.
+	static CNetworkManager* mpNetManager;	//!< Unique instance pointer
+	bool mIsServer;							//!< True if the network manager is running as a server, false otherwise.
+	RakNet::RakPeerInterface* mpPeer;		//!< Pointer on raknet peer object.
+	RakNet::BitStream mBS;					//< BitStream will be fed with some data before be sent as a packet.
 
 	//! \brief Constructor.
 
@@ -67,7 +78,7 @@ public:
 	//! \brief Get the unique instance of the class.
 	//! \param EType: EClient or EServer. Default is EClient. Useful only for the first call.
 	//! \return Pointer on the unique instance.
-	static CNetworkManager* getInstance(ECS EType=ECS::EClient);
+	static CNetworkManager* getInstance(ECS EType = ECS::EClient);
 
 	//! \brief Destroy the unique instance of the singleton.
 	//! \return Nothing.
@@ -96,5 +107,26 @@ public:
 	//! \throw Throw a std::exception if the packet is not a ping response packet.
 	void PrintPingResponse(RakNet::Packet* pPacket) const;
 
+	//! \brief Create a new packet that will be sent over the network.
+
+	//! Packet only contains timestamp. You need to fill it with AddData(data).
+	//! \param EmessageID: an ECustomID enum's element that indicate to the receiver what to do with the packet.
+	//! \return Nothing.
+	void CreatePacket(ECustomID EmessageID);
+
+	//! \brief Template method that add some data to the current packet.
+
+	//! It's template because you can write integer, float, std::string, literal string, structure that is a mix of all of these.
+	//! \param data: the data you want to write in the current packet, it must not be a pointer or a structure containing a pointer!
+	//! \return Nothing
+	template<typename T>
+	void AddData(T data);
+
 };
+
+template<typename T>
+void CNetworkManager::AddData(T data)
+{
+	mBS.Write(data);
+}
 
