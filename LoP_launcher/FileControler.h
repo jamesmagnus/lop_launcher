@@ -23,6 +23,8 @@
 
 #pragma once
 
+#include <string>
+
 //! \enum EFileState Enum used to describe if the file is up to date or not.
 enum class EFileState
 {
@@ -36,7 +38,7 @@ enum class EFileState
 class CFileControler
 {
 private:
-	static CFileControler* mpInstance;
+	static CFileControler* mpInstance;	//!< Pointer to the unique instance.
 
 	//! \brief Private constructor.
 	CFileControler();
@@ -53,5 +55,12 @@ public:
 	//! \brief Destroy the unique instance.
 	//! \return Nothing.
 	static void destroy();
+
+	//! \brief Load the desired directory and locks it content
+	//! \param rDirectory a string that contain the path to the directory relative to the base directory.
+	//! \return Nothing
+	//! \throw Throw a boost exception if rDirectory doesn't exist.
+
+	void LoadDirectoryAndLock(std::string const& rDirectory);
 };
 
