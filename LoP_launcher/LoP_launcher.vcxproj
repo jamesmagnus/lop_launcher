@@ -174,12 +174,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BaseWindow.cpp" />
+    <ClCompile Include="FileControler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NetworkManager.cpp" />
     <ClCompile Include="tmp\moc\moc_BaseWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseWindow.h" />
+    <ClInclude Include="FileControler.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="NetworkManager.h" />
   </ItemGroup>

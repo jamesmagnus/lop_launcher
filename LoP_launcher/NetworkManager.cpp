@@ -19,7 +19,7 @@
 //! \author Jean-loup Beaussart
 //! \version 0.1
 //! \copyright 2015,2016 Jean-loup Beaussart LGPLv3
-//! \brief Methods and functions related to the CNetworkManager class.
+//! \brief Methods and functions related to the CNetworkManager class. This class is a singleton and manage the send/receive packets.
 
 #include "NetworkManager.h"
 #include <exception>
@@ -93,6 +93,12 @@ bool CNetworkManager::ProcessPackets()
 		case ID_UNCONNECTED_PONG:
 			PrintPingResponse(pPacket);
 			break;
+		case EFileInfo:
+			break;
+		case EFileContent:
+			break;
+		case EVersion:
+			break;
 		default:
 			break;
 		}
@@ -112,7 +118,7 @@ void CNetworkManager::PrintPingResponse(RakNet::Packet* pPacket) const
 	else
 	{
 		RakNet::BitStream bs(pPacket->data, pPacket->length, false);
-		bs. IgnoreBytes(1);
+		bs.IgnoreBytes(1);
 
 		RakNet::TimeMS time;
 		bs.Read(time);

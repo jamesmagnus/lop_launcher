@@ -19,7 +19,7 @@
 //! \author Jean-loup Beaussart
 //! \version 0.1
 //! \copyright 2015,2016 Jean-loup Beaussart LGPLv3
-//! \brief Header file for the class CNetworkManager.
+//! \brief Header file for the class CNetworkManager. This class is a singleton and manage the send/receive packets.
 
 #pragma once
 
@@ -45,7 +45,7 @@ enum ECustomID
 {
 	EFileInfo = DefaultMessageIDTypes::ID_USER_PACKET_ENUM,	//!< Message with informations about a file.
 	EFileContent,											//!< File transfer.
-	EVersion												//!< Game version
+	EVersion												//!< Game version.
 };
 
 class RakNet::RakPeerInterface;
@@ -75,7 +75,7 @@ private:
 
 public:
 
-	//! \brief Get the unique instance of the class.
+	//! \brief Get the class unique instance.
 	//! \param EType: EClient or EServer. Default is EClient. Useful only for the first call.
 	//! \return Pointer on the unique instance.
 	static CNetworkManager* getInstance(ECS EType = ECS::EClient);
