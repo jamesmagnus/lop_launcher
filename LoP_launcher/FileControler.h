@@ -25,6 +25,13 @@
 
 #include <string>
 
+#ifdef _WIN32
+
+//! \def Windows only. Define the max size in byte for the temporary string holding error message from system.
+#define ERROR_STR_MAX_SIZE 2048
+
+#endif
+
 //! \enum EFileState Enum used to describe if the file is up to date or not.
 enum class EFileState
 {
