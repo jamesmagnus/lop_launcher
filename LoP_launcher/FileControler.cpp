@@ -38,8 +38,8 @@ CFileControler* CFileControler::mpInstance = nullptr;
 
 CFileControler::CFileControler()
 {
+	mDirectory = "";
 }
-
 
 CFileControler::~CFileControler()
 {
@@ -65,16 +65,15 @@ void CFileControler::LoadDirectoryAndLock(string const& rDirectory)
 	if (filesystem::exists(rDirectory) && filesystem::is_directory(rDirectory))
 	{
 		vector<filesystem::path> paths;
-#ifdef WIN32
-		vector<void *> handles;
-#endif
+
+		mDirectory = rDirectory;
 
 		copy_if(filesystem::recursive_directory_iterator(rDirectory), filesystem::recursive_directory_iterator(), back_inserter(paths), [](filesystem::directory_entry it)
 		{
 			return !filesystem::is_directory(it.path());
 		});
 
-		for_each(paths.begin(), paths.end(), [&handles](filesystem::path path)
+		for_each(paths.begin(), paths.end(), [this](filesystem::path path)
 		{
 #ifdef WIN32
 			/* Getting windows handle on file to prevent other process from modifying it */
@@ -82,7 +81,7 @@ void CFileControler::LoadDirectoryAndLock(string const& rDirectory)
 
 			if ((p = CreateFile(path.generic_wstring().c_str(), GENERIC_WRITE | GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr)) != INVALID_HANDLE_VALUE)
 			{
-				handles.push_back(p);
+				mHandles.push_back(p);
 			}
 			else
 			{
@@ -109,5 +108,16 @@ void CFileControler::LoadDirectoryAndLock(string const& rDirectory)
 	{
 		string e = rDirectory + " doesn't exist or is not a directory.";
 		throw std::exception(e.c_str());
+	}
+}
+
+void CFileControler::UnloadDirectory()
+{
+	if (mDirectory != "")
+	{
+		for_each(mHandles.begin(), mHandles.end(), [](void *p)
+		{
+			CloseHandle(p);
+		});
 	}
 }

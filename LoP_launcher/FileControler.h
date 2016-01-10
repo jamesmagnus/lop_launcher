@@ -24,6 +24,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #ifdef _WIN32
 
@@ -46,6 +47,8 @@ class CFileControler
 {
 private:
 	static CFileControler* mpInstance;	//!< Pointer to the unique instance.
+	std::string mDirectory;				//!< String holding the name of the current loaded directory.
+	std::vector<void *> mHandles;		//!< Array of files pointers.
 
 	//! \brief Private constructor.
 	CFileControler();
@@ -63,11 +66,14 @@ public:
 	//! \return Nothing.
 	static void destroy();
 
-	//! \brief Load the desired directory and locks it content
+	//! \brief Load the desired directory and locks it content.
 	//! \param rDirectory a string that contain the path to the directory relative to the base directory.
 	//! \return Nothing
-	//! \throw Throw a boost exception if rDirectory doesn't exist.
-
+	//! \throw Throw a std::exception if a problem happend when locking a file. 
 	void LoadDirectoryAndLock(std::string const& rDirectory);
+
+	//! \brief Unload and unlock the directory that is loaded.
+	//! \return Nothing
+	void UnloadDirectory();
 };
 
