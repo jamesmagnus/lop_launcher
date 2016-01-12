@@ -24,13 +24,10 @@
 #pragma once
 
 #include <string>
-#include <vector>
+#include <map>
 
-#ifdef _WIN32
-
-//! \def Windows only. Define the max size in byte for the temporary string holding error message from system.
-#define ERROR_STR_MAX_SIZE 2048
-
+#ifdef WIN32
+#include <Windows.h>
 #endif
 
 //! \enum EFileState Enum used to describe if the file is up to date or not.
@@ -46,9 +43,9 @@ enum class EFileState
 class CFileControler
 {
 private:
-	static CFileControler* mpInstance;	//!< Pointer to the unique instance.
-	std::string mDirectory;				//!< String holding the name of the current loaded directory.
-	std::vector<void *> mHandles;		//!< Array of files pointers.
+	static CFileControler* mpInstance;			//!< Pointer to the unique instance.
+	std::string mDirectory;						//!< String holding the name of the current loaded directory.
+	std::map<std::string, HANDLE> mHandles;	//!< Files mapped with their name.
 
 	//! \brief Private constructor.
 	CFileControler();
@@ -74,6 +71,7 @@ public:
 
 	//! \brief Unload and unlock the directory that is loaded.
 	//! \return Nothing
+	//! \throw Throw a std::exception if the system can't close one or more file.
 	void UnloadDirectory();
 };
 
