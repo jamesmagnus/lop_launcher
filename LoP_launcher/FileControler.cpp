@@ -22,14 +22,16 @@
 //! \brief Methods and functions related to the CFileControler class. It's a class used to check file's version on the drive and to say if needs update or not. It's a singleton.
 
 #include "FileControler.h"
+
+#ifdef _WIN32
+#include "WinUtil.h"
+#endif
+
 #include <boost/filesystem.hpp>
 #include <boost/interprocess/sync/file_lock.hpp>
+#include <utf8.h>
 #include <exception>
 #include <vector>
-
-#ifdef WIN32
-#include <Windows.h>
-#endif
 
 using namespace std;
 using namespace boost;
@@ -38,7 +40,7 @@ CFileControler* CFileControler::mpInstance = nullptr;
 
 CFileControler::CFileControler()
 {
-	mDirectory = "";
+	mDirectory.clear();
 }
 
 CFileControler::~CFileControler()
@@ -77,29 +79,25 @@ void CFileControler::LoadDirectoryAndLock(string const& rDirectory)
 		{
 #ifdef WIN32
 			/* Getting windows handle on file to prevent other process from modifying it */
-			void* p = nullptr;
+			HANDLE p = nullptr;
 
 			if ((p = CreateFile(path.generic_wstring().c_str(), GENERIC_WRITE | GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr)) != INVALID_HANDLE_VALUE)
 			{
-				mHandles.push_back(p);
+				wstring wPath = path.c_str();
+				string pathUTF8;
+				utf8::utf16to8(wPath.begin(), wPath.end(), back_inserter(pathUTF8));
+
+				mHandles.insert_or_assign(pathUTF8, p);
 			}
 			else
 			{
-				
-				wstring e = path.c_str();
-				LPWSTR k = nullptr;
-				char *exceptionMessage = new char[ERROR_STR_MAX_SIZE];
+				wstring wMessage = path.c_str();
+				string exceptionMessageUTF8;
 
-				FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_ALLOCATE_BUFFER, 0, GetLastError(), 0, (LPWSTR)&k, ERROR_STR_MAX_SIZE, nullptr);
-				
-				e += L" : ";
-				e += k;
+				utf8::utf16to8(wMessage.begin(), wMessage.end(), back_inserter(exceptionMessageUTF8));
+				exceptionMessageUTF8 += getWindowsErrorMessage();
 
-				HeapFree(GetProcessHeap(), 0, k);
-
-				WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, e.c_str(), -1, (LPSTR)exceptionMessage, ERROR_STR_MAX_SIZE, nullptr, nullptr);
-
-				throw std::exception(exceptionMessage);
+				throw std::exception(exceptionMessageUTF8.c_str());
 			}	
 #endif
 		});
@@ -113,11 +111,35 @@ void CFileControler::LoadDirectoryAndLock(string const& rDirectory)
 
 void CFileControler::UnloadDirectory()
 {
-	if (mDirectory != "")
+	if (!mDirectory.empty())
 	{
-		for_each(mHandles.begin(), mHandles.end(), [](void *p)
+		vector<string> errors;
+		for_each(mHandles.begin(), mHandles.end(), [& errors](pair<string, HANDLE> p)
 		{
-			CloseHandle(p);
+			if (!CloseHandle(p.second))
+			{
+				string tmp = p.first;
+				tmp += " : ";
+				tmp += getWindowsErrorMessage();
+
+				errors.push_back(tmp);
+			} 
 		});
+
+		mDirectory.clear();
+		mHandles.clear();
+
+		if (!errors.empty())
+		{
+			string msg;
+
+			for_each(errors.begin(), errors.end(), [& msg](string e)
+			{
+				msg += e;
+				msg += "\n";
+			});
+
+			throw std::exception(msg.c_str());
+		}
 	}
 }
