@@ -73,5 +73,11 @@ public:
 	//! \return Nothing
 	//! \throw Throw a std::exception if the system can't close one or more file.
 	void UnloadDirectory();
+
+	//! \brief Compute the md5 hash for a given file.
+	//! \param rName a string that contain the path of the file you want to compute the md5.
+	//! \return String with md5 hash of the file.
+	//! \throw Throw a std::exception if file cannot be found.
+	std::string FileMD5(std::string const& rName) const;
 };
 

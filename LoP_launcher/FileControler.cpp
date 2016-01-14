@@ -32,6 +32,9 @@
 #include <utf8.h>
 #include <exception>
 #include <vector>
+#include <cstdio>
+#include <iostream>
+#include <OTHER/include/md5.h>
 
 using namespace std;
 using namespace boost;
@@ -141,5 +144,40 @@ void CFileControler::UnloadDirectory()
 
 			throw std::exception(msg.c_str());
 		}
+	}
+}
+
+string CFileControler::FileMD5(string const& rName) const
+{
+	if (mHandles.find(rName) != mHandles.end())
+	{
+		md5_byte_t B;
+		md5_state_t MD5State;
+		md5_init(&MD5State);
+		unsigned long nb;
+
+#ifdef _WIN32
+
+		HANDLE file = mHandles.at(rName);
+		ReadFile(file, &B, 1, &nb, nullptr);
+
+		do 
+		{
+			md5_append(&MD5State, &B, 1);
+		} while (ReadFile(file, &B, 1, &nb, nullptr) && nb != 0);
+
+		md5_byte_t tmp[17];
+		tmp[16] = '\0';
+
+		md5_finish(&MD5State, tmp);
+
+		return (char*)tmp;
+
+#endif
+	}
+	else
+	{
+		string msg("Cannot find the requested file: " + rName + "\n");
+		throw std::exception(msg.c_str());
 	}
 }
