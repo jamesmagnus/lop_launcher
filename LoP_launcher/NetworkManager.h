@@ -75,8 +75,15 @@ private:
 	//! Private destructor used by the singleton. Use CNetWork::destroy().
 	~CNetworkManager();
 
+	//! \brief Private const method that return the identifier byte of a packet.
+	//! \param pPacket: the address of a packet.
+	//! \return Return the identifier (1 byte) of the packet.
 	RakNet::MessageID getPacketIdentifier(RakNet::Packet const* pPacket) const;
 
+	//! \brief Private method to handle a game version request.
+	//! \param pPacket: the address of a packet containing the request.
+	//! \return Nothing.
+	//! \throw Throw a std::exception if the packet doesn't contain a version request.
 	void HandleVersionRequest(RakNet::Packet const* pPacket);
 
 public:
