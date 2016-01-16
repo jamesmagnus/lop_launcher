@@ -22,6 +22,7 @@
 //! \brief Methods and functions related to the CNetworkManager class. This class is a singleton and manage the send/receive packets.
 
 #include "NetworkManager.h"
+#include "main.h"
 #include <exception>
 #include <iostream>
 #include <RakNet/RakPeerInterface.h>
@@ -37,6 +38,30 @@ CNetworkManager::CNetworkManager(ECS EType)
 
 CNetworkManager::~CNetworkManager()
 {
+}
+
+
+RakNet::MessageID CNetworkManager::getPacketIdentifier(RakNet::Packet const* pPacket) const
+{
+	if (pPacket->data[0] == ID_TIMESTAMP)
+	{
+		return pPacket->data[sizeof(unsigned char) + sizeof(unsigned long)];
+	} 
+	else
+	{
+		return pPacket->data[0];
+	}
+}
+
+
+void CNetworkManager::HandleVersionRequest(RakNet::Packet const* pPacket)
+{
+	if (getPacketIdentifier(pPacket) != EVersion)
+	{
+	} 
+	else
+	{
+	}
 }
 
 CNetworkManager * CNetworkManager::getInstance(ECS EType)
@@ -77,9 +102,12 @@ void CNetworkManager::CreateSubSystem()
 	}
 }
 
-void CNetworkManager::Ping(unsigned int port, RakNet::RakString address) const
+void CNetworkManager::Ping(unsigned short port, RakNet::RakString address) const
 {
-	mpPeer->Ping(address.C_String(), port, false);
+	if (!mpPeer->Ping(address.C_String(), port, false))
+	{
+		throw std::exception("Unknow host for ping.");
+	}
 }
 
 bool CNetworkManager::ProcessPackets()
@@ -88,16 +116,26 @@ bool CNetworkManager::ProcessPackets()
 
 	while (pPacket = mpPeer->Receive())
 	{
-		switch (pPacket->data[0])
+		switch (getPacketIdentifier(pPacket))
 		{
 		case ID_UNCONNECTED_PONG:
 			PrintPingResponse(pPacket);
+			break;
+		case ID_CONNECTION_REQUEST_ACCEPTED:
+			mpPeer->SetOccasionalPing(true);
+			mIsConnected = true;
+			break;
+		case ID_CONNECTION_ATTEMPT_FAILED:
+		case ID_CONNECTION_BANNED:
+		case ID_CONNECTION_LOST:
+			mIsConnected = false;
 			break;
 		case EFileInfo:
 			break;
 		case EFileContent:
 			break;
 		case EVersion:
+			HandleVersionRequest(pPacket);
 			break;
 		default:
 			break;
@@ -111,7 +149,7 @@ bool CNetworkManager::ProcessPackets()
 
 void CNetworkManager::PrintPingResponse(RakNet::Packet* pPacket) const
 {
-	if (pPacket->data[0] != ID_UNCONNECTED_PONG)
+	if (getPacketIdentifier(pPacket) != ID_UNCONNECTED_PONG)
 	{
 		throw std::exception("Error: wrong packet type.");
 	} 
@@ -134,4 +172,20 @@ void CNetworkManager::CreatePacket(ECustomID EmessageID)
 	mBS.Write(RakNet::GetTime());
 
 	mBS.Write(static_cast<RakNet::MessageID>(EmessageID));
+}
+
+void CNetworkManager::Connect(std::string const& rIP, unsigned short port, RakNet::PublicKey *pPublicKey, unsigned int connectionTry, unsigned int timeBetween)
+{
+	if (!mpPeer->Connect(rIP.c_str(), port, nullptr, 0, pPublicKey, 0, connectionTry, timeBetween) == RakNet::CONNECTION_ATTEMPT_STARTED)
+	{
+		throw std::exception("Can't send a connection request.");
+	}
+}
+
+void CNetworkManager::Send()
+{
+	if (!mpPeer->Send(&mBS, PacketPriority::HIGH_PRIORITY, PacketReliability::RELIABLE_ORDERED_WITH_ACK_RECEIPT, 0, mpPeer->GetGUIDFromIndex(0), false))
+	{
+		throw std::exception("Error when sending a packet.");
+	}
 }

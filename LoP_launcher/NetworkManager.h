@@ -26,6 +26,7 @@
 #include <RakNet/MessageIdentifiers.h>
 #include <RakNet/RakString.h>
 #include <RakNet/BitStream.h>
+#include <string>
 
 //! \def Define the maximum number of connexions allowed at the same time (server mode).
 #define MAX_PEER 500
@@ -60,7 +61,8 @@ private:
 	static CNetworkManager* mpNetManager;	//!< Unique instance pointer
 	bool mIsServer;							//!< True if the network manager is running as a server, false otherwise.
 	RakNet::RakPeerInterface* mpPeer;		//!< Pointer on raknet peer object.
-	RakNet::BitStream mBS;					//< BitStream will be fed with some data before be sent as a packet.
+	RakNet::BitStream mBS;					//!< BitStream will be fed with some data before be sent as a packet.
+	bool mIsConnected;						//!< True if the system is connected to the server, false otherwise.
 
 	//! \brief Constructor.
 
@@ -72,6 +74,10 @@ private:
 
 	//! Private destructor used by the singleton. Use CNetWork::destroy().
 	~CNetworkManager();
+
+	RakNet::MessageID getPacketIdentifier(RakNet::Packet const* pPacket) const;
+
+	void HandleVersionRequest(RakNet::Packet const* pPacket);
 
 public:
 
@@ -93,7 +99,8 @@ public:
 	//! \param port: the port
 	//! \param address: target's address
 	//! \return Nothing
-	void Ping(unsigned int port, RakNet::RakString address = "255.255.255.255") const;
+	//! \throw Throw a std::exception if the host name isn't valid.
+	void Ping(unsigned short port, RakNet::RakString address = "255.255.255.255") const;
 
 	//! \brief Process each packet on the stack and then free these packets.
 
@@ -113,6 +120,20 @@ public:
 	//! \param EmessageID: an ECustomID enum's element that indicate to the receiver what to do with the packet.
 	//! \return Nothing.
 	void CreatePacket(ECustomID EmessageID);
+
+	//! \brief Try to establish a connection with a server.
+	//! \param rIP: a string with the rIP address to connect to. Ex: "127.0.0.1".
+	//! \param port: port number.
+	//! \param rPublicKey: public key to authenticate yourself with the server.
+	//! \param connectionTry: number of connection request before give up.
+	//! \param timeBetween: time to wait for a response before trying again.
+	//! \return Nothing.
+	void Connect(std::string const& rIP, unsigned short port, RakNet::PublicKey *pPublicKey, unsigned int connectionTry = 12, unsigned int timeBetween = 1000);
+
+	//! \brief Send the current packet to the server.
+	//! \return Nothing.
+	//! \throw Throw a std::exception if the function fails to send the packet. If no exception is thrown it doesn't mean the packet has been receive.
+	void Send();
 
 	//! \brief Template method that add some data to the current packet.
 
