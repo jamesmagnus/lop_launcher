@@ -79,5 +79,7 @@ public:
 	//! \return String with md5 hash of the file.
 	//! \throw Throw a std::exception if file cannot be found.
 	std::string FileMD5(std::string const& rName) const;
+
+	std::string getGameVersion() const;
 };
 

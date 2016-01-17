@@ -181,3 +181,12 @@ string CFileControler::FileMD5(string const& rName) const
 		throw std::exception(msg.c_str());
 	}
 }
+
+std::string CFileControler::getGameVersion() const
+{
+	FILE *pF = nullptr;
+
+	fopen_s(&pF, "/data/manifest.man", "r");
+
+	return "";
+}
