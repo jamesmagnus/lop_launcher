@@ -31,6 +31,17 @@ int main(int argc, char* argv[])
 	pMainWindow->SetupUi();
 	pMainWindow->show();
 
+	try
+	{
+		CFileControler::getInstance()->LoadDirectoryAndLock("E:\\OLD\\L3DT");
+		CFileControler::getInstance()->FileMD5("E:\\OLD\\L3DT\\logs\\Pro 15.08.0.1\\log.txt");
+		CFileControler::getInstance()->UnloadDirectory();
+	}
+	catch (std::exception & e)
+	{
+		std::cerr << e.what();
+	}
+
 	CNetworkManager::getInstance(ECS::EClient)->CreateSubSystem();
 
 	//TEST
@@ -42,4 +53,11 @@ int main(int argc, char* argv[])
 	//TEST
 
 	return app.exec();
+}
+
+void ServerConnect(std::string const& address)
+{
+	CNetworkManager *pNetMgn = CNetworkManager::getInstance();
+
+	//pNetMgn->Connect();
 }

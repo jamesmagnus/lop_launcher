@@ -26,6 +26,10 @@
 #include <QtWidgets\QtWidgets>
 #include <QtUiTools\quiloader.h>
 #include <QtCore\qplugin.h>
+#include <iostream>
 
 #include "NetworkManager.h"
+#include "FileControler.h"
 #include "BaseWindow.h"
+
+void ServerConnect(std::string const& address);

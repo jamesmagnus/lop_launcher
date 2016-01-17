@@ -70,20 +70,20 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ExecutablePath>$(QTDIR)\qtbase\bin;$(ExecutablePath)</ExecutablePath>
-    <IncludePath>$(DEVLIB)\BOOST_140;$(DEVLIB)\RAKNET_140\include;$(QTDIR)\qtbase\src\3rdparty\angle\include;$(QTDIR)\qtbase\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(DEVLIB)\BOOST_140\stage\lib;$(DEVLIB)\RAKNET_140\bin\debug;$(QTDIR)\qtbase\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(DEVLIB);$(DEVLIB)\UTF8\source;$(DEVLIB)\BOOST_140;$(DEVLIB)\RAKNET_140\include;$(QTDIR)\qtbase\src\3rdparty\angle\include;$(QTDIR)\qtbase\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(DEVLIB)\OTHER\lib\debug;$(DEVLIB)\BOOST_140\stage\lib;$(DEVLIB)\RAKNET_140\bin\debug;$(QTDIR)\qtbase\lib;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)_d</TargetName>
     <CustomBuildBeforeTargets>BuildLink</CustomBuildBeforeTargets>
     <CustomBuildAfterTargets>BuildCompile</CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ExecutablePath>$(QTDIR)\qtbase\bin;$(ExecutablePath)</ExecutablePath>
-    <IncludePath>$(DEVLIB)\BOOST_140;$(DEVLIB)\RAKNET_140\include;$(QTDIR)\qtbase\src\3rdparty\angle\include;$(QTDIR)\qtbase\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(DEVLIB)\UTF8\source;$(DEVLIB)\BOOST_140;$(DEVLIB)\RAKNET_140\include;$(QTDIR)\qtbase\src\3rdparty\angle\include;$(QTDIR)\qtbase\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(DEVLIB)\BOOST_140\stage\lib;$(DEVLIB)\RAKNET_140\bin\release;$(QTDIR)\qtbase\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -95,10 +95,12 @@
       <FloatingPointExceptions>true</FloatingPointExceptions>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <CompileAs>CompileAsCpp</CompileAs>
+      <DisableSpecificWarnings>4820;4464;4365;4710;4625;4626;5026;5027;4571;4619;5031;4191;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>RakNetDLL_d.lib;Qt5Cored.lib;QT5Guid.lib;Qt5Widgetsd.lib;Qt5UiToolsd.lib;Qt5PlatformSupportd.lib;..\plugins\platforms\qwindowsd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libmd5_d.lib;RakNetDLL_d.lib;Qt5Cored.lib;QT5Guid.lib;Qt5Widgetsd.lib;Qt5UiToolsd.lib;Qt5PlatformSupportd.lib;..\plugins\platforms\qwindowsd.lib;comsuppwd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>NotSet</SubSystem>
     </Link>
     <CustomBuildStep>
       <Command>
@@ -115,7 +117,7 @@
       <Inputs>$(QTDIR)\qtbase\bin\moc.exe</Inputs>
     </CustomBuildStep>
     <PreBuildEvent>
-      <Command>$(QTDIR)\qtbase\bin\moc.exe "G:\Beaussart\Documents\Visual Studio 2015\Projects\LoP_launcher\LoP_launcher\BaseWindow.h" -o "G:\Beaussart\Documents\Visual Studio 2015\Projects\LoP_launcher\LoP_launcher\tmp\moc\moc_BaseWindow.cpp"</Command>
+      <Command>$(QTDIR)\qtbase\bin\moc.exe "%USERPROFILE%\Documents\Visual Studio 2015\Projects\LoP_launcher\LoP_launcher\BaseWindow.h" -o "%USERPROFILE%\Documents\Visual Studio 2015\Projects\LoP_launcher\LoP_launcher\tmp\moc\moc_BaseWindow.cpp"</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>moc</Message>
@@ -155,8 +157,12 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalDependencies>RakNetDLL.lib;Qt5Core.lib;QT5Gui.lib;Qt5Widgets.lib;Qt5UiTools.lib;Qt5PlatformSupport.lib;..\plugins\platforms\qwindows.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>RakNetDLL.lib;Qt5Core.lib;QT5Gui.lib;Qt5Widgets.lib;Qt5UiTools.lib;Qt5PlatformSupport.lib;..\plugins\platforms\qwindows.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Message>MOC</Message>
+      <Command>$(QTDIR)\qtbase\bin\moc.exe "%USERPROFILE%\Documents\Visual Studio 2015\Projects\LoP_launcher\LoP_launcher\BaseWindow.h" -o "%USERPROFILE%\Documents\Visual Studio 2015\Projects\LoP_launcher\LoP_launcher\tmp\moc\moc_BaseWindow.cpp"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -178,12 +184,14 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NetworkManager.cpp" />
     <ClCompile Include="tmp\moc\moc_BaseWindow.cpp" />
+    <ClCompile Include="WinUtil.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseWindow.h" />
     <ClInclude Include="FileControler.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="NetworkManager.h" />
+    <ClInclude Include="WinUtil.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
