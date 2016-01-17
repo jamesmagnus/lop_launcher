@@ -29,6 +29,8 @@
 #include <RakNet/RakNetTime.h>
 #include <RakNet/GetTime.h>
 
+using namespace std;
+
 CNetworkManager* CNetworkManager::mpNetManager = nullptr;
 
 CNetworkManager::CNetworkManager(ECS EType)
@@ -45,7 +47,7 @@ RakNet::MessageID CNetworkManager::getPacketIdentifier(RakNet::Packet const* pPa
 {
 	if (pPacket->data[0] == ID_TIMESTAMP)
 	{
-		return pPacket->data[sizeof(unsigned char) + sizeof(unsigned long)];
+		return pPacket->data[sizeof(RakNet::MessageID) + sizeof(RakNet::TimeMS)];
 	} 
 	else
 	{
@@ -54,13 +56,42 @@ RakNet::MessageID CNetworkManager::getPacketIdentifier(RakNet::Packet const* pPa
 }
 
 
-void CNetworkManager::HandleVersionRequest(RakNet::Packet const* pPacket)
+RakNet::MessageID CNetworkManager::getPacketSubIdentifier(RakNet::Packet const* pPacket) const
 {
-	if (getPacketIdentifier(pPacket) != EVersion)
+	if (pPacket->data[0] == ID_TIMESTAMP)
 	{
+		return pPacket->data[sizeof(RakNet::MessageID) + sizeof(RakNet::TimeMS) + sizeof(RakNet::MessageID)];
 	} 
 	else
 	{
+		return pPacket->data[sizeof(RakNet::MessageID)];
+	}
+}
+
+void CNetworkManager::HandleVersionRequest(RakNet::Packet const* pPacket)
+{
+	if (getPacketIdentifier(pPacket) != EMsgIDVersion)
+	{
+		throw std::exception("Wrong packet passed to HandleVersionRequest.");
+	} 
+	else
+	{
+		if (getPacketSubIdentifier(pPacket) == ESubMsgRequest)
+		{
+			string ver = CFileControler::getInstance()->getGameVersion();
+			CreatePacket(EMsgIDVersion);
+			AddData(ESubMsgResponse);
+			AddData(ver.c_str());
+			Send();
+		}
+		else if (getPacketSubIdentifier(pPacket) == ESubMsgResponse)
+		{
+			//TODO: save remote version.
+		}
+		else
+		{
+			throw std::exception("Error in the sub ID");
+		}
 	}
 }
 
@@ -130,11 +161,11 @@ bool CNetworkManager::ProcessPackets()
 		case ID_CONNECTION_LOST:
 			mIsConnected = false;
 			break;
-		case EFileInfo:
+		case EMsgIDFileInfo:
 			break;
-		case EFileContent:
+		case EMsgIDFileContent:
 			break;
-		case EVersion:
+		case EMsgIDVersion:
 			HandleVersionRequest(pPacket);
 			break;
 		default:
@@ -164,7 +195,7 @@ void CNetworkManager::PrintPingResponse(RakNet::Packet* pPacket) const
 	}
 }
 
-void CNetworkManager::CreatePacket(ECustomID EmessageID)
+void CNetworkManager::CreatePacket(ECustomMessageID EmessageID)
 {
 	mBS.Reset();
 

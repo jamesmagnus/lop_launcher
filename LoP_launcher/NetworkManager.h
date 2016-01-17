@@ -41,12 +41,20 @@ enum class ECS
 	EClient		//!< Client
 };
 
-//! \enum ECustomID Complement the Raknet message ID with custom IDs.
-enum ECustomID
+//! \enum ECustomMessageID extends the Raknet message ID with custom IDs.
+enum ECustomMessageID
 {
-	EFileInfo = DefaultMessageIDTypes::ID_USER_PACKET_ENUM,	//!< Message with informations about a file.
-	EFileContent,											//!< File transfer.
-	EVersion												//!< Game version.
+	EMsgIDFileInfo = DefaultMessageIDTypes::ID_USER_PACKET_ENUM,	//!< Message with informations about a file.
+	EMsgIDFileContent,												//!< File transfer.
+	EMsgIDFileHash,													//!< MD5 file hash.
+	EMsgIDVersion													//!< Game version.
+};
+
+//! \enum ESubrequestID completes the message ID with a second byte that tells the system what to do with the file hash for exemple.
+enum ESubrequestID
+{
+	ESubMsgRequest = 1,		//!< Ask the system for something (like a file hash).
+	ESubMsgResponse			//!< Response from the remote system to a request previously sent.
 };
 
 class RakNet::RakPeerInterface;
@@ -79,6 +87,11 @@ private:
 	//! \param pPacket: the address of a packet.
 	//! \return Return the identifier (1 byte) of the packet.
 	RakNet::MessageID getPacketIdentifier(RakNet::Packet const* pPacket) const;
+
+	//! \brief Private const method that return the second identifier byte of packet. (subrequest ID).
+	//! \param pPacket: the address of a packet. Caution passing a packet without a subrequest ID will return undefined byte!
+	//! \return Return the sub ID (1 byte).
+	RakNet::MessageID getPacketSubIdentifier(RakNet::Packet const* pPacket) const;
 
 	//! \brief Private method to handle a game version request.
 	//! \param pPacket: the address of a packet containing the request.
@@ -124,9 +137,9 @@ public:
 	//! \brief Create a new packet that will be sent over the network.
 
 	//! Packet only contains timestamp. You need to fill it with AddData(data).
-	//! \param EmessageID: an ECustomID enum's element that indicate to the receiver what to do with the packet.
+	//! \param EmessageID: an ECustomMessageID enum's element that indicate to the receiver what to do with the packet.
 	//! \return Nothing.
-	void CreatePacket(ECustomID EmessageID);
+	void CreatePacket(ECustomMessageID EmessageID);
 
 	//! \brief Try to establish a connection with a server.
 	//! \param rIP: a string with the rIP address to connect to. Ex: "127.0.0.1".
